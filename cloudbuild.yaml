@@ -1,0 +1,26 @@
+steps:
+  # build the container image
+  - name: "gcr.io/cloud-builders/docker"
+    args: ["build", "-t", "gcr.io/$PROJECT_ID/kambista-app:$COMMIT_SHA", "."]
+    # push the container image to Container Registry
+  - name: "gcr.io/cloud-builders/docker"
+    args: ["push", "gcr.io/$PROJECT_ID/kambista-app:$COMMIT_SHA"]
+    # deploy container image to Cloud Run
+  - name: "gcr.io/cloud-builders/gcloud"
+    args:
+      [
+        "run",
+        "deploy",
+        "kambista-app",
+        "--image",
+        "gcr.io/$PROJECT_ID/kambista-app:$COMMIT_SHA",
+        "--region",
+        "us-central1",
+        "--allow-unauthenticated",
+      ]
+    env:
+      - "PORT=8080"
+      - "HOST=0.0.0.0"
+      - "REST_URL=http://0.0.0.0:5002/"
+images:
+  - gcr.io/$PROJECT_ID/kambista-app:$COMMIT_SHA
